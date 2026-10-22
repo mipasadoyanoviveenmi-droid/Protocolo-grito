@@ -1,0 +1,868 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Protocolo GRITO - Rutina Nocturna</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Plus Jakarta Sans & Outfits -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        night: {
+                            900: '#0B132B',
+                            800: '#1C2541',
+                            700: '#2A365B',
+                            600: '#3A506B',
+                        },
+                        sunflower: {
+                            300: '#FDE047',
+                            400: '#FACC15',
+                            500: '#EAB308',
+                            600: '#CA8A04'
+                        },
+                        starlight: '#5BC0BE',
+                        softglow: '#E0FBFC'
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #070B19;
+            color: #E0FBFC;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow: hidden;
+        }
+
+        /* Continuous subtle background stars animation */
+        .stars-bg {
+            background: radial-gradient(ellipse at bottom, #1C2541 0%, #070B19 100%);
+        }
+
+        .star {
+            position: absolute;
+            background-color: #ffffff;
+            border-radius: 50%;
+            animation: twinkle infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.2; transform: scale(0.8); }
+            100% { opacity: 0.9; transform: scale(1.2); }
+        }
+
+        /* Floating effect */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* Pulse glow */
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(250, 204, 21, 0.2); }
+            50% { box-shadow: 0 0 30px rgba(250, 204, 21, 0.6); }
+        }
+        .pulse-glow {
+            animation: pulseGlow 3s infinite;
+        }
+
+        /* Glassmorphism containers */
+        .glass-card {
+            background: rgba(28, 37, 65, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(250, 204, 21, 0.3);
+            border-radius: 10px;
+        }
+
+        /* Smooth page transitions */
+        .step-container {
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .step-hidden {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            position: absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+        }
+        .step-active {
+            opacity: 1;
+            transform: translateY(0);
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Grounding blur canvas transition */
+        .grounding-blur {
+            backdrop-filter: blur(20px);
+            transition: backdrop-filter 1s ease, background-color 1s ease;
+        }
+
+        /* Ripple effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple-anim 0.6s linear;
+            background-color: rgba(250, 204, 21, 0.3);
+            pointer-events: none;
+        }
+        @keyframes ripple-anim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex justify-center items-center overflow-hidden stars-bg text-slate-100">
+
+    <!-- Starry background generator layer -->
+    <div id="stars-layer" class="fixed inset-0 pointer-events-none z-0"></div>
+
+    <!-- Mobile Frame Simulation Container -->
+    <main class="w-full h-full max-w-md max-h-[920px] md:h-[90vh] md:rounded-[40px] md:border-4 md:border-slate-800/80 shadow-2xl relative overflow-hidden flex flex-col justify-between glass-card z-10 my-auto">
+        
+        <!-- TOP APP BAR -->
+        <header class="px-6 pt-5 pb-3 flex justify-between items-center border-b border-white/5 z-20">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-sunflower-500/20 flex items-center justify-center text-sunflower-400 font-bold text-xs border border-sunflower-500/30">
+                    🌻
+                </div>
+                <div>
+                    <h1 class="font-display font-bold text-sm tracking-wide text-white">PROTOCOLO GRITO</h1>
+                    <p class="text-[10px] text-slate-400 font-medium">Rutina Nocturna de Calma</p>
+                </div>
+            </div>
+            
+            <!-- Audio Toggle & Reset -->
+            <div class="flex items-center gap-2">
+                <button id="sound-btn" onclick="toggleAudio()" class="w-9 h-9 rounded-full bg-slate-800/60 hover:bg-slate-700 flex items-center justify-center text-slate-300 transition-colors border border-white/10" title="Audio">
+                    <i id="sound-icon" class="fas fa-volume-up text-xs"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- DYNAMIC STEP PROGRESS INDICATOR -->
+        <div id="progress-bar-container" class="px-6 py-2 hidden z-20">
+            <div class="flex items-center justify-between gap-1 mb-1">
+                <span id="step-letter" class="text-xs font-bold font-display text-sunflower-400">Paso 1 de 5</span>
+                <span id="step-title" class="text-[11px] text-slate-400 font-medium">Grounding</span>
+            </div>
+            <div class="w-full bg-slate-800/80 h-1.5 rounded-full overflow-hidden p-0.5 border border-white/5">
+                <div id="progress-fill" class="bg-gradient-to-r from-starlight to-sunflower-400 h-full rounded-full transition-all duration-500 w-[0%]"></div>
+            </div>
+        </div>
+
+        <!-- MAIN INTERACTIVE CONTENT AREA -->
+        <div class="flex-1 relative overflow-y-auto overflow-x-hidden p-6 flex flex-col justify-center">
+
+            <!-- --------------------------------------- -->
+            <!-- PANTALLA INICIAL / INTRO -->
+            <!-- --------------------------------------- -->
+            <section id="step-0" class="step-container step-active text-center flex flex-col items-center justify-between h-full py-4">
+                <div class="my-auto flex flex-col items-center">
+                    <div class="relative mb-6">
+                        <div class="w-32 h-32 rounded-full bg-gradient-to-b from-sunflower-400/20 to-night-800/40 flex items-center justify-center border border-sunflower-400/30 pulse-glow">
+                            <i class="fas fa-moon text-5xl text-sunflower-400 animate-float"></i>
+                        </div>
+                        <div class="absolute -bottom-2 -right-2 bg-night-800 p-2 rounded-full border border-sunflower-500/40 text-xl">
+                            🌻
+                        </div>
+                    </div>
+
+                    <h2 class="font-display text-3xl font-bold tracking-tight text-white mb-2">PROTOCOLO GRITO</h2>
+                    <p class="text-sunflower-400 text-sm font-semibold mb-4 tracking-wider uppercase">Rutina Nocturna de Calma y Desconexión</p>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-xs mb-6">
+                        Tómate 5 minutos para desacelerar tu mente, liberar las cargas del día y preparar tu cuerpo para un descanso profundo.
+                    </p>
+
+                    <div class="flex gap-2 justify-center mb-2">
+                        <span class="px-2.5 py-1 rounded-full bg-slate-800/80 border border-white/10 text-[11px] text-slate-300">🌿 Enraízate</span>
+                        <span class="px-2.5 py-1 rounded-full bg-slate-800/80 border border-white/10 text-[11px] text-slate-300">🌬️ Respira</span>
+                        <span class="px-2.5 py-1 rounded-full bg-slate-800/80 border border-white/10 text-[11px] text-slate-300">🌻 Suelta</span>
+                    </div>
+                </div>
+
+                <button onclick="nextStep(1)" class="w-full py-4 rounded-2xl bg-gradient-to-r from-sunflower-500 to-sunflower-400 hover:from-sunflower-400 hover:to-sunflower-300 text-night-900 font-bold font-display text-base shadow-lg shadow-sunflower-500/20 active:scale-95 transition-all">
+                    Comenzar Rutina
+                </button>
+            </section>
+
+            <!-- --------------------------------------- -->
+            <!-- PASO 1: G - GROUNDING (ENRAIZAMIENTO) -->
+            <!-- --------------------------------------- -->
+            <section id="step-1" class="step-container step-hidden flex flex-col justify-between h-full py-2">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="w-8 h-8 rounded-xl bg-sunflower-400/20 text-sunflower-400 font-bold font-display flex items-center justify-center text-lg border border-sunflower-400/30">G</span>
+                        <h2 class="font-display text-xl font-bold text-white">Grounding (Enraizamiento)</h2>
+                    </div>
+                    <p class="text-xs text-slate-300 mb-4 leading-relaxed">
+                        Siente tu cuerpo y tu entorno. Observa tu espacio para reconectar con el presente. <b class="text-sunflower-300">Toca 3 objetos en la habitación</b> para disipar la niebla mental.
+                    </p>
+                </div>
+
+                <!-- Interactive blurry room scene -->
+                <div id="grounding-scene" class="relative w-full h-64 rounded-2xl bg-night-900/80 border border-white/10 overflow-hidden flex items-center justify-center my-auto shadow-inner">
+                    <!-- Blur Overlay -->
+                    <div id="grounding-blur-overlay" class="absolute inset-0 grounding-blur z-20 pointer-events-none flex items-center justify-center">
+                        <span id="grounding-counter" class="bg-night-900/80 px-4 py-2 rounded-full border border-sunflower-400/40 text-xs font-semibold text-sunflower-300 shadow-lg">
+                            Objetos tocados: 0 / 3
+                        </span>
+                    </div>
+
+                    <!-- Room Graphic Elements -->
+                    <div class="absolute inset-0 p-4 flex justify-between items-end">
+                        
+                        <!-- Element 1: Plant -->
+                        <button onclick="touchGroundingItem(this, 'Planta viva')" class="grounding-item relative z-10 group p-3 rounded-2xl hover:bg-white/5 transition-all focus:outline-none">
+                            <div class="w-14 h-16 flex flex-col items-center justify-end text-emerald-400 text-3xl">
+                                <i class="fas fa-seedling transition-transform group-active:scale-125"></i>
+                                <span class="text-[9px] text-slate-300 mt-1 font-medium bg-night-900/70 px-1.5 py-0.5 rounded">Planta</span>
+                            </div>
+                        </button>
+
+                        <!-- Element 2: Starry Window -->
+                        <button onclick="touchGroundingItem(this, 'Ventana estrellada')" class="grounding-item relative z-10 group p-3 rounded-2xl hover:bg-white/5 transition-all focus:outline-none">
+                            <div class="w-16 h-20 bg-night-800/80 border border-slate-600 rounded-t-full flex flex-col items-center justify-center text-starlight text-2xl relative overflow-hidden">
+                                <i class="fas fa-star text-xs absolute top-2 left-2 text-yellow-200"></i>
+                                <i class="fas fa-moon text-lg group-active:scale-125 transition-transform"></i>
+                                <span class="text-[9px] text-slate-300 mt-2 font-medium bg-night-900/70 px-1.5 py-0.5 rounded">Ventana</span>
+                            </div>
+                        </button>
+
+                        <!-- Element 3: Warm Lamp -->
+                        <button onclick="touchGroundingItem(this, 'Lámpara tenue')" class="grounding-item relative z-10 group p-3 rounded-2xl hover:bg-white/5 transition-all focus:outline-none">
+                            <div class="w-14 h-16 flex flex-col items-center justify-end text-sunflower-400 text-3xl">
+                                <i class="fas fa-lightbulb transition-transform group-active:scale-125"></i>
+                                <span class="text-[9px] text-slate-300 mt-1 font-medium bg-night-900/70 px-1.5 py-0.5 rounded">Lámpara</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-center min-h-[40px] flex items-center justify-center">
+                    <p id="grounding-feedback" class="text-xs text-starlight italic">Toca tu entorno para enfocarte...</p>
+                </div>
+
+                <button id="btn-step-1" disabled onclick="nextStep(2)" class="w-full py-3.5 rounded-2xl bg-slate-800 text-slate-500 font-bold font-display text-sm transition-all cursor-not-allowed">
+                    Continuar a Respiración
+                </button>
+            </section>
+
+            <!-- --------------------------------------- -->
+            <!-- PASO 2: R - RESPIRACIÓN CONSCIENTE -->
+            <!-- --------------------------------------- -->
+            <section id="step-2" class="step-container step-hidden flex flex-col justify-between h-full py-2">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="w-8 h-8 rounded-xl bg-starlight/20 text-starlight font-bold font-display flex items-center justify-center text-lg border border-starlight/30">R</span>
+                        <h2 class="font-display text-xl font-bold text-white">Respiración Consciente</h2>
+                    </div>
+                    <p class="text-xs text-slate-300 mb-2 leading-relaxed">
+                        Aplica la respiración en caja (4-4-4-4) para calmar tu sistema nervioso.
+                    </p>
+                </div>
+
+                <!-- Box Breathing Visualizer Container -->
+                <div class="flex flex-col items-center justify-center my-auto py-4">
+                    <div class="relative w-56 h-56 flex items-center justify-center">
+                        
+                        <!-- Expanding Outer Ring -->
+                        <div id="breath-circle" class="absolute w-28 h-28 rounded-full bg-gradient-to-tr from-starlight/30 to-sunflower-400/30 border border-starlight/50 transition-all ease-in-out duration-1000 flex items-center justify-center"></div>
+                        
+                        <!-- Core Circle -->
+                        <div class="w-24 h-24 rounded-full bg-night-800/90 border border-white/20 flex flex-col items-center justify-center z-10 shadow-xl text-center px-2">
+                            <span id="breath-instruction" class="font-display font-bold text-sm text-starlight uppercase tracking-wider">Inhala</span>
+                            <span id="breath-timer" class="font-display font-bold text-2xl text-white my-0.5">4</span>
+                        </div>
+                    </div>
+
+                    <!-- Cycle Tracker -->
+                    <div class="mt-4 flex items-center gap-2">
+                        <span class="text-xs text-slate-400 font-medium">Ciclos completados:</span>
+                        <div class="flex gap-1.5" id="breath-dots">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-700 border border-white/10 transition-colors"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-700 border border-white/10 transition-colors"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center min-h-[36px]">
+                    <p id="breath-status-msg" class="text-xs text-slate-300">Sigue el ritmo del círculo...</p>
+                </div>
+
+                <button id="btn-step-2" disabled onclick="nextStep(3)" class="w-full py-3.5 rounded-2xl bg-slate-800 text-slate-500 font-bold font-display text-sm transition-all cursor-not-allowed">
+                    Continuar a Emociones
+                </button>
+            </section>
+
+            <!-- --------------------------------------- -->
+            <!-- PASO 3: I - IDENTIFICACIÓN EMOCIONAL -->
+            <!-- --------------------------------------- -->
+            <section id="step-3" class="step-container step-hidden flex flex-col justify-between h-full py-2">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="w-8 h-8 rounded-xl bg-purple-400/20 text-purple-300 font-bold font-display flex items-center justify-center text-lg border border-purple-400/30">I</span>
+                        <h2 class="font-display text-xl font-bold text-white">Identificación Emocional</h2>
+                    </div>
+                    <p class="text-xs text-slate-300 mb-3 leading-relaxed">
+                        Reconoce y valida tus emociones del día sin juzgarlas ni intentar resolverlas. Selecciona las que sientas:
+                    </p>
+                </div>
+
+                <!-- Emotion Orbs Grid -->
+                <div class="grid grid-cols-2 gap-2.5 my-auto">
+                    <button onclick="toggleEmotion(this, 'Cansancio')" class="emotion-btn p-3 rounded-2xl bg-night-800/80 border border-white/10 hover:border-purple-400/50 flex items-center gap-2.5 transition-all text-left">
+                        <span class="text-xl">🥱</span>
+                        <span class="text-xs font-medium text-slate-200">Cansancio</span>
+                    </button>
+                    <button onclick="toggleEmotion(this, 'Gratitud')" class="emotion-btn p-3 rounded-2xl bg-night-800/80 border border-white/10 hover:border-purple-400/50 flex items-center gap-2.5 transition-all text-left">
+                        <span class="text-xl">🌸</span>
+                        <span class="text-xs font-medium text-slate-200">Gratitud</span>
+                    </button>
+                    <button onclick="toggleEmotion(this, 'Frustración')" class="emotion-btn p-3 rounded-2xl bg-night-800/80 border border-white/10 hover:border-purple-400/50 flex items-center gap-2.5 transition-all text-left">
+                        <span class="text-xl">🌧️</span>
+                        <span class="text-xs font-medium text-slate-200">Frustración</span>
+                    </button>
+                    <button onclick="toggleEmotion(this, 'Ansiedad')" class="emotion-btn p-3 rounded-2xl bg-night-800/80 border border-white/10 hover:border-purple-400/50 flex items-center gap-2.5 transition-all text-left">
+                        <span class="text-xl">⚡</span>
+                        <span class="text-xs font-medium text-slate-200">Ansiedad</span>
+                    </button>
+                    <button onclick="toggleEmotion(this, 'Paz')" class="emotion-btn p-3 rounded-2xl bg-night-800/80 border border-white/10 hover:border-purple-400/50 flex items-center gap-2.5 transition-all text-left">
+                        <span class="text-xl">🌙</span>
+                        <span class="text-xs font-medium text-slate-200">Paz</span>
+                    </button>
+                    <button onclick="toggleEmotion(this, 'Carga mental')" class="emotion-btn p-3 rounded-2xl bg-night-800/80 border border-white/10 hover:border-purple-400/50 flex items-center gap-2.5 transition-all text-left">
+                        <span class="text-xl">📦</span>
+                        <span class="text-xs font-medium text-slate-200">Carga mental</span>
+                    </button>
+                </div>
+
+                <!-- Affirmation Box -->
+                <div id="emotion-validation" class="p-3.5 rounded-2xl bg-purple-900/20 border border-purple-500/30 text-center min-h-[64px] flex items-center justify-center">
+                    <p class="text-xs text-purple-200 font-medium italic">"Es completamente normal sentirse así hoy. Es válido escuchar lo que tu cuerpo siente."</p>
+                </div>
+
+                <button id="btn-step-3" onclick="nextStep(4)" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-sunflower-500 to-sunflower-400 text-night-900 font-bold font-display text-sm transition-all shadow-md active:scale-95">
+                    Continuar a Trascendencia
+                </button>
+            </section>
+
+            <!-- --------------------------------------- -->
+            <!-- PASO 4: T - TRASCENDENCIA Y ACEPTACIÓN -->
+            <!-- --------------------------------------- -->
+            <section id="step-4" class="step-container step-hidden flex flex-col justify-between h-full py-2">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="w-8 h-8 rounded-xl bg-blue-400/20 text-blue-300 font-bold font-display flex items-center justify-center text-lg border border-blue-400/30">T</span>
+                        <h2 class="font-display text-xl font-bold text-white">Trascendencia y Aceptación</h2>
+                    </div>
+                    <p class="text-xs text-slate-300 mb-3 leading-relaxed">
+                        Suelta lo que estuvo fuera de tu control hoy. Escribe o simboliza una preocupación para dejarla ir.
+                    </p>
+                </div>
+
+                <!-- Release Interactive Box -->
+                <div class="my-auto relative flex flex-col items-center justify-center">
+                    <div id="letgo-container" class="w-full relative flex flex-col items-center">
+                        <textarea id="worry-input" rows="3" placeholder="Escribe aquí lo que te preocupó hoy (opcional)..." class="w-full p-3.5 rounded-2xl bg-night-900/90 border border-white/15 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-starlight resize-none transition-all mb-4"></textarea>
+                        
+                        <!-- Heavy stone icon that will float away -->
+                        <div id="floating-worry" class="w-20 h-20 rounded-full bg-slate-800 border-2 border-slate-600 flex items-center justify-center text-3xl text-slate-400 shadow-2xl transition-all duration-1000 my-2">
+                            🪨
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center min-h-[30px]">
+                    <p id="release-msg" class="text-xs text-slate-400">Déjalo ir por esta noche. Mañana será otro día.</p>
+                </div>
+
+                <div class="flex gap-2">
+                    <button id="release-btn" onclick="releaseWorry()" class="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-starlight to-teal-400 text-night-900 font-bold font-display text-sm transition-all shadow-md active:scale-95">
+                        🎈 Dejar Ir
+                    </button>
+                    <button id="btn-step-4" disabled onclick="nextStep(5)" class="hidden flex-1 py-3.5 rounded-2xl bg-sunflower-400 text-night-900 font-bold font-display text-sm transition-all shadow-md">
+                        Siguiente paso
+                    </button>
+                </div>
+            </section>
+
+            <!-- --------------------------------------- -->
+            <!-- PASO 5: O - ORGULLO Y AUTOCOMPASIÓN -->
+            <!-- --------------------------------------- -->
+            <section id="step-5" class="step-container step-hidden flex flex-col justify-between h-full py-2">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="w-8 h-8 rounded-xl bg-sunflower-500/20 text-sunflower-400 font-bold font-display flex items-center justify-center text-lg border border-sunflower-500/30">O</span>
+                        <h2 class="font-display text-xl font-bold text-white">Orgullo y Autocompasión</h2>
+                    </div>
+                    <p class="text-xs text-slate-300 mb-2 leading-relaxed">
+                        Agradécete por tu esfuerzo del día y establece una intención amable para mañana.
+                    </p>
+                </div>
+
+                <!-- Sunflower Garden Interactive -->
+                <div class="my-auto flex flex-col items-center justify-center">
+                    
+                    <!-- Plant Soil & Flower Container -->
+                    <div onclick="waterSunflower()" class="cursor-pointer group relative w-48 h-48 flex flex-col items-center justify-end">
+                        
+                        <!-- Flower Canvas Dynamic Output -->
+                        <div id="sunflower-wrapper" class="transition-all duration-700 transform scale-50 opacity-40 flex flex-col items-center">
+                            <!-- Flower head -->
+                            <div class="w-20 h-20 rounded-full bg-sunflower-400 border-4 border-amber-800 flex items-center justify-center text-amber-900 font-bold text-xl shadow-lg relative">
+                                🌻
+                            </div>
+                            <!-- Stem -->
+                            <div class="w-2 h-16 bg-emerald-600 rounded-full my-0"></div>
+                        </div>
+
+                        <!-- Soil Pot -->
+                        <div class="w-32 h-10 bg-amber-950/80 border border-amber-800/60 rounded-b-2xl rounded-t-sm flex items-center justify-center text-[10px] text-amber-200 font-medium z-10 shadow-lg">
+                            <span id="pot-label">Toca para regar 💧</span>
+                        </div>
+                    </div>
+
+                    <!-- Intentions Selector -->
+                    <div class="w-full mt-4">
+                        <label class="text-[11px] text-slate-400 font-medium mb-1.5 block text-center">Elige tu intención para mañana:</label>
+                        <select id="intention-select" class="w-full p-2.5 rounded-xl bg-night-800 border border-white/10 text-xs text-sunflower-300 focus:outline-none focus:border-sunflower-400">
+                            <option>✨ Mañana seré amable y paciente conmigo</option>
+                            <option>🌙 Mañana descansaré cuando mi cuerpo lo pida</option>
+                            <option>🌿 Mañana iré paso a paso, a mi propio ritmo</option>
+                            <option>💛 Reconozco que hoy di lo mejor de mí</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="btn-step-5" disabled onclick="nextStep(6)" class="w-full py-3.5 rounded-2xl bg-slate-800 text-slate-500 font-bold font-display text-sm transition-all cursor-not-allowed">
+                    Finalizar Rutina Nocturna
+                </button>
+            </section>
+
+            <!-- --------------------------------------- -->
+            <!-- PANTALLA FINAL DE RECOMPENSA / RESUMEN -->
+            <!-- --------------------------------------- -->
+            <section id="step-6" class="step-container step-hidden text-center flex flex-col items-center justify-between h-full py-2">
+                <div class="my-auto flex flex-col items-center w-full">
+                    
+                    <div class="w-20 h-20 rounded-full bg-sunflower-400/20 border-2 border-sunflower-400 flex items-center justify-center text-3xl mb-4 text-sunflower-400 pulse-glow">
+                        🌻
+                    </div>
+
+                    <h2 class="font-display text-2xl font-bold text-white mb-1">¡Rutina Completada!</h2>
+                    <p class="text-xs text-starlight mb-6 font-medium">Tu mente y tu cuerpo están listos para descansar.</p>
+
+                    <!-- Summary Card -->
+                    <div class="w-full p-4 rounded-2xl bg-night-800/90 border border-white/10 text-left space-y-2 mb-6">
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="text-sunflower-400 font-bold">G</span>
+                            <span class="text-slate-300">Enraizamiento completado</span>
+                            <i class="fas fa-check text-emerald-400 text-xs ml-auto"></i>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="text-starlight font-bold">R</span>
+                            <span class="text-slate-300">Respiración en caja regulada</span>
+                            <i class="fas fa-check text-emerald-400 text-xs ml-auto"></i>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="text-purple-300 font-bold">I</span>
+                            <span class="text-slate-300">Emociones reconocidas y validadas</span>
+                            <i class="fas fa-check text-emerald-400 text-xs ml-auto"></i>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="text-blue-300 font-bold">T</span>
+                            <span class="text-slate-300">Preocupaciones liberadas</span>
+                            <i class="fas fa-check text-emerald-400 text-xs ml-auto"></i>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="text-sunflower-400 font-bold">O</span>
+                            <span class="text-slate-300">Intención sembrada con orgullo</span>
+                            <i class="fas fa-check text-emerald-400 text-xs ml-auto"></i>
+                        </div>
+                    </div>
+
+                    <!-- Final Supportive Quote -->
+                    <div class="p-3 rounded-xl bg-sunflower-400/10 border border-sunflower-400/20 mb-2">
+                        <p class="text-[11px] text-sunflower-200 italic font-medium">
+                            "Que Se Escuche Fuerte Mi Grito A.C. • Red de Apoyo y Salud Mental"
+                        </p>
+                    </div>
+                </div>
+
+                <button onclick="resetRoutine()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-sunflower-500 to-sunflower-400 text-night-900 font-bold font-display text-sm transition-all shadow-lg active:scale-95">
+                    Buenas Noches (Cerrar Sesión)
+                </button>
+            </section>
+
+        </div>
+
+        <!-- FOOTER BRANDING -->
+        <footer class="py-2.5 px-6 border-t border-white/5 text-center text-[10px] text-slate-500 font-medium z-20 flex justify-between items-center">
+            <span>Protocolo GRITO © Salud Mental</span>
+            <span class="text-sunflower-400/80">🌙 Modo Noche</span>
+        </footer>
+
+    </main>
+
+    <!-- JAVASCRIPT LOGIC & AUDIO SYNTHESIZER -->
+    <script>
+        // App State
+        let currentStep = 0;
+        let audioEnabled = true;
+        let touchedGroundingCount = 0;
+        let breathCycleCount = 0;
+        let breathInterval = null;
+        let selectedEmotions = [];
+        let isWatered = false;
+
+        // Native Web Audio Synthesizer for relaxing tones (No external MP3 files required)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playTone(freq, type = 'sine', duration = 0.5, gainVal = 0.1) {
+            if (!audioEnabled || audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                
+                gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {
+                console.log("Audio play error", e);
+            }
+        }
+
+        function playChime() {
+            playTone(523.25, 'sine', 1.2, 0.15); // C5
+            setTimeout(() => playTone(659.25, 'sine', 1.2, 0.12), 150); // E5
+            setTimeout(() => playTone(783.99, 'sine', 1.5, 0.1), 300); // G5
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const icon = document.getElementById('sound-icon');
+            if (audioEnabled) {
+                icon.className = 'fas fa-volume-up text-xs text-sunflower-400';
+                playTone(440, 'sine', 0.2, 0.05);
+            } else {
+                icon.className = 'fas fa-volume-mute text-xs text-slate-500';
+            }
+        }
+
+        // Starfield generator
+        function initStars() {
+            const container = document.getElementById('stars-layer');
+            container.innerHTML = '';
+            for (let i = 0; i < 45; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = `${Math.random() * 3 + 1}px`;
+                star.style.height = star.style.width;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                star.style.animationDelay = `${Math.random() * 2}s`;
+                container.appendChild(star);
+            }
+        }
+
+        // Step Navigation Handler
+        function nextStep(stepNumber) {
+            playTone(440, 'sine', 0.2, 0.08);
+
+            // Hide previous step
+            const currentEl = document.getElementById(`step-${currentStep}`);
+            if (currentEl) {
+                currentEl.classList.remove('step-active');
+                currentEl.classList.add('step-hidden');
+            }
+
+            currentStep = stepNumber;
+
+            // Show current step
+            const nextEl = document.getElementById(`step-${currentStep}`);
+            if (nextEl) {
+                nextEl.classList.remove('step-hidden');
+                nextEl.classList.add('step-active');
+            }
+
+            // Update Progress Bar UI
+            const progressBarContainer = document.getElementById('progress-bar-container');
+            const progressFill = document.getElementById('progress-fill');
+            const stepLetter = document.getElementById('step-letter');
+            const stepTitle = document.getElementById('step-title');
+
+            if (currentStep > 0 && currentStep <= 5) {
+                progressBarContainer.classList.remove('hidden');
+                const percent = (currentStep / 5) * 100;
+                progressFill.style.width = `${percent}%`;
+                
+                const titles = ['', 'Grounding', 'Respiración', 'Emociones', 'Trascendencia', 'Orgullo'];
+                const letters = ['', 'Paso 1 - G', 'Paso 2 - R', 'Paso 3 - I', 'Paso 4 - T', 'Paso 5 - O'];
+                
+                stepLetter.textContent = letters[currentStep];
+                stepTitle.textContent = titles[currentStep];
+            } else {
+                progressBarContainer.classList.add('hidden');
+            }
+
+            // Step specific initializations
+            if (currentStep === 2) {
+                startBreathingExercise();
+            } else {
+                clearInterval(breathInterval);
+            }
+        }
+
+        // STEP 1: Grounding Logic
+        function touchGroundingItem(btnElement, name) {
+            if (btnElement.classList.contains('touched')) return;
+
+            btnElement.classList.add('touched');
+            btnElement.style.opacity = '1';
+            btnElement.style.transform = 'scale(1.1)';
+
+            playTone(587.33, 'sine', 0.4, 0.12); // D5
+
+            touchedGroundingCount++;
+            document.getElementById('grounding-counter').textContent = `Objetos tocados: ${touchedGroundingCount} / 3`;
+            document.getElementById('grounding-feedback').textContent = `✨ Reconocido: ${name}`;
+
+            // Reduce blur intensity
+            const blurOverlay = document.getElementById('grounding-blur-overlay');
+            if (touchedGroundingCount === 1) {
+                blurOverlay.style.backdropFilter = 'blur(12px)';
+            } else if (touchedGroundingCount === 2) {
+                blurOverlay.style.backdropFilter = 'blur(5px)';
+            } else if (touchedGroundingCount >= 3) {
+                blurOverlay.style.backdropFilter = 'blur(0px)';
+                blurOverlay.style.backgroundColor = 'transparent';
+                document.getElementById('grounding-counter').className = "bg-emerald-500/20 border border-emerald-400 text-emerald-300 px-4 py-2 rounded-full text-xs font-bold";
+                document.getElementById('grounding-counter').textContent = "✓ Mente enraizada en el presente";
+                
+                const btn1 = document.getElementById('btn-step-1');
+                btn1.disabled = false;
+                btn1.className = "w-full py-3.5 rounded-2xl bg-gradient-to-r from-sunflower-500 to-sunflower-400 text-night-900 font-bold font-display text-sm transition-all shadow-md active:scale-95";
+                
+                playChime();
+            }
+        }
+
+        // STEP 2: Box Breathing Logic (4-4-4-4)
+        function startBreathingExercise() {
+            let phase = 0; // 0: Inhale, 1: Hold, 2: Exhale, 3: Pause
+            let seconds = 4;
+            breathCycleCount = 0;
+
+            const circle = document.getElementById('breath-circle');
+            const instruction = document.getElementById('breath-instruction');
+            const timer = document.getElementById('breath-timer');
+            const statusMsg = document.getElementById('breath-status-msg');
+
+            clearInterval(breathInterval);
+
+            breathInterval = setInterval(() => {
+                seconds--;
+                timer.textContent = seconds;
+
+                if (seconds <= 0) {
+                    phase = (phase + 1) % 4;
+                    seconds = 4;
+
+                    if (phase === 0) {
+                        breathCycleCount++;
+                        updateBreathDots();
+                        instruction.textContent = "Inhala";
+                        instruction.className = "font-display font-bold text-sm text-starlight uppercase tracking-wider";
+                        circle.style.transform = "scale(1.8)";
+                        circle.style.backgroundColor = "rgba(91, 192, 190, 0.4)";
+                        playTone(329.63, 'sine', 1.0, 0.08); // E4
+                    } else if (phase === 1) {
+                        instruction.textContent = "Mantén";
+                        instruction.className = "font-display font-bold text-sm text-sunflower-300 uppercase tracking-wider";
+                        playTone(392.00, 'sine', 0.5, 0.05); // G4
+                    } else if (phase === 2) {
+                        instruction.textContent = "Exhala";
+                        instruction.className = "font-display font-bold text-sm text-indigo-300 uppercase tracking-wider";
+                        circle.style.transform = "scale(1.0)";
+                        circle.style.backgroundColor = "rgba(28, 37, 65, 0.4)";
+                        playTone(261.63, 'sine', 1.0, 0.08); // C4
+                    } else if (phase === 3) {
+                        instruction.textContent = "Pausa";
+                        instruction.className = "font-display font-bold text-sm text-slate-400 uppercase tracking-wider";
+                        playTone(220.00, 'sine', 0.5, 0.05); // A3
+                    }
+
+                    if (breathCycleCount >= 2) {
+                        statusMsg.textContent = "✓ Ritmo cardíaco regulado";
+                        statusMsg.className = "text-xs text-emerald-400 font-semibold";
+                        const btn2 = document.getElementById('btn-step-2');
+                        btn2.disabled = false;
+                        btn2.className = "w-full py-3.5 rounded-2xl bg-gradient-to-r from-sunflower-500 to-sunflower-400 text-night-900 font-bold font-display text-sm transition-all shadow-md active:scale-95";
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateBreathDots() {
+            const dots = document.getElementById('breath-dots').children;
+            for (let i = 0; i < dots.length; i++) {
+                if (i < breathCycleCount) {
+                    dots[i].className = "w-2.5 h-2.5 rounded-full bg-starlight border border-starlight shadow-glow";
+                }
+            }
+        }
+
+        // STEP 3: Emotion Selection Logic
+        function toggleEmotion(element, emotionName) {
+            playTone(493.88, 'sine', 0.2, 0.08); // B4
+
+            if (element.classList.contains('bg-purple-600/40')) {
+                element.classList.remove('bg-purple-600/40', 'border-purple-400');
+                element.classList.add('bg-night-800/80', 'border-white/10');
+                selectedEmotions = selectedEmotions.filter(e => e !== emotionName);
+            } else {
+                element.classList.add('bg-purple-600/40', 'border-purple-400');
+                element.classList.remove('bg-night-800/80', 'border-white/10');
+                selectedEmotions.push(emotionName);
+            }
+
+            const valBox = document.getElementById('emotion-validation');
+            if (selectedEmotions.length > 0) {
+                valBox.innerHTML = `<p class="text-xs text-purple-200 font-medium italic">"Reconocer que sientes ${selectedEmotions.join(', ')} es un acto de valentía y autocompasión."</p>`;
+            } else {
+                valBox.innerHTML = `<p class="text-xs text-purple-200 font-medium italic">"Es completamente normal sentirse así hoy. Es válido escuchar lo que tu cuerpo siente."</p>`;
+            }
+        }
+
+        // STEP 4: Release Worry Logic
+        function releaseWorry() {
+            const floatObj = document.getElementById('floating-worry');
+            const releaseBtn = document.getElementById('release-btn');
+            const nextBtn = document.getElementById('btn-step-4');
+            const msg = document.getElementById('release-msg');
+
+            playTone(392.00, 'sine', 0.8, 0.1);
+            setTimeout(() => playTone(523.25, 'sine', 1.2, 0.1), 300);
+
+            floatObj.style.transform = 'translateY(-180px) scale(0.2)';
+            floatObj.style.opacity = '0';
+            floatObj.innerHTML = '✨';
+
+            msg.textContent = "✨ Tu preocupación se ha disuelto en las estrellas.";
+            msg.className = "text-xs text-sunflower-300 font-semibold";
+
+            releaseBtn.classList.add('hidden');
+            nextBtn.classList.remove('hidden');
+            nextBtn.disabled = false;
+        }
+
+        // STEP 5: Sunflower Watering Logic
+        function waterSunflower() {
+            if (isWatered) return;
+            isWatered = true;
+
+            playChime();
+
+            const flower = document.getElementById('sunflower-wrapper');
+            const label = document.getElementById('pot-label');
+            const btn5 = document.getElementById('btn-step-5');
+
+            flower.style.transform = 'scale(1.1)';
+            flower.style.opacity = '1';
+
+            label.textContent = "🌻 ¡Girasol Florecido!";
+            label.className = "text-xs text-sunflower-300 font-bold";
+
+            btn5.disabled = false;
+            btn5.className = "w-full py-3.5 rounded-2xl bg-gradient-to-r from-sunflower-500 to-sunflower-400 text-night-900 font-bold font-display text-sm transition-all shadow-md active:scale-95";
+        }
+
+        // RESET ROUTINE
+        function resetRoutine() {
+            touchedGroundingCount = 0;
+            breathCycleCount = 0;
+            selectedEmotions = [];
+            isWatered = false;
+
+            // Reset UI
+            document.querySelectorAll('.grounding-item').forEach(el => {
+                el.classList.remove('touched');
+                el.style.transform = 'scale(1)';
+            });
+            document.getElementById('grounding-blur-overlay').style.backdropFilter = 'blur(20px)';
+            document.getElementById('grounding-counter').textContent = "Objetos tocados: 0 / 3";
+            
+            const floatObj = document.getElementById('floating-worry');
+            floatObj.style.transform = 'translateY(0) scale(1)';
+            floatObj.style.opacity = '1';
+            floatObj.innerHTML = '🪨';
+            document.getElementById('worry-input').value = '';
+
+            document.getElementById('release-btn').classList.remove('hidden');
+            document.getElementById('btn-step-4').classList.add('hidden');
+
+            const flower = document.getElementById('sunflower-wrapper');
+            flower.style.transform = 'scale(0.5)';
+            flower.style.opacity = '0.4';
+
+            nextStep(0);
+        }
+
+        // Initialize stars on load
+        window.onload = function() {
+            initStars();
+        };
+    </script>
+</body>
+</html>
+```
